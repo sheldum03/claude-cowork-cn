@@ -30,7 +30,9 @@ import os
 import platform
 import re
 import shutil
+import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -122,6 +124,56 @@ class ClaudePatcher:
             return False
         print(f"  ✓ 找到翻译资源: {self.resources_dir}")
         return True
+
+    # ---------- 退出正在运行的 Claude ----------
+
+    def quit_claude(self) -> None:
+        """安装前退出 Claude，避免它退出时用内存中的旧 locale 覆盖配置文件"""
+        if self.dry_run:
+            print("\n[预演] 跳过退出 Claude")
+            return
+        print("\n正在退出 Claude（避免覆盖语言设置）...")
+        try:
+            if self.system == "Darwin":
+                # 优雅退出
+                subprocess.run(
+                    ["osascript", "-e", 'tell application "Claude" to quit'],
+                    capture_output=True, timeout=10,
+                )
+                time.sleep(2)
+                # 兜底：若仍在运行则强制结束
+                subprocess.run(["pkill", "-x", "Claude"], capture_output=True)
+            elif self.system == "Windows":
+                subprocess.run(
+                    ["taskkill", "/IM", "Claude.exe", "/F"],
+                    capture_output=True, timeout=10,
+                )
+            time.sleep(1)
+            print("  ✓ 已尝试退出 Claude")
+        except Exception as e:
+            print(f"  ⚠ 退出 Claude 时出现问题（可忽略，请确保手动退出）: {e}")
+
+    def launch_claude(self) -> None:
+        """安装完成后重新启动 Claude，使其加载新的中文配置"""
+        if self.dry_run:
+            print("\n[预演] 跳过启动 Claude")
+            return
+        print("\n正在重新启动 Claude...")
+        try:
+            if self.system == "Darwin":
+                subprocess.run(["open", "-a", "Claude"], capture_output=True, timeout=10)
+            elif self.system == "Windows":
+                # Claude.exe 通常在 base 目录下
+                exe = self.paths.get("app")
+                exe_path = (exe / "Claude.exe") if exe else None
+                if exe_path and exe_path.exists():
+                    subprocess.Popen([str(exe_path)])
+                else:
+                    print("  ⚠ 未找到 Claude.exe，请手动启动 Claude")
+                    return
+            print("  ✓ 已启动 Claude")
+        except Exception as e:
+            print(f"  ⚠ 启动 Claude 时出现问题（请手动打开 Claude）: {e}")
 
     # ---------- 核心步骤 1：复制语言文件 ----------
 
@@ -407,6 +459,9 @@ class ClaudePatcher:
             print("模式: 预演（dry-run，不会实际修改任何文件）")
         print()
 
+        # 先退出 Claude，否则它退出时会用内存里的旧 locale 覆盖我们写入的中文设置
+        self.quit_claude()
+
         results = [
             self.copy_language_files(lang),
             self.patch_language_whitelist(lang),
@@ -514,13 +569,14 @@ def main() -> int:
 
     success = patcher.install(lang, with_system_prompt=with_sp)
 
+    if success:
+        patcher.launch_claude()
+
     print("\n" + "=" * 60)
     if success:
         print("✓ 安装完成!")
-        print("\n后续步骤:")
-        print("  1. 重启 Claude Desktop")
-        print("  2. 点击左下角头像 -> Language")
-        print(f"  3. 选择「{LANG_NAME.get(lang, lang)}」")
+        print(f"\nClaude 已重新启动，界面应已切换为「{LANG_NAME.get(lang, lang)}」。")
+        print("如果没有自动切换，点击左下角头像 -> Language 手动选择。")
         if with_sp:
             print("\n已注入 system prompt 中文指令，Claude 将默认用简体中文回答。")
         print("\n说明: 轻量版覆盖约 70% 界面。系统菜单、在线 claude.ai")

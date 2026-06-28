@@ -48,7 +48,7 @@ cd claude-cowork-cn
 python install.py
 ```
 
-安装后重启 Claude Desktop，点击左下角头像 → Language → 选择中文。
+安装后会自动重启 Claude Desktop，界面默认即为所选中文。如果没有自动切换，点击左下角头像 → Language → 选择中文。
 
 ## 命令行参数
 
