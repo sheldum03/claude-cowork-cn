@@ -127,29 +127,58 @@ class ClaudePatcher:
 
     # ---------- 退出正在运行的 Claude ----------
 
+    def _is_claude_running(self) -> bool:
+        """检测 Claude 进程是否仍在运行"""
+        try:
+            if self.system == "Darwin":
+                r = subprocess.run(["pgrep", "-x", "Claude"], capture_output=True, timeout=3)
+                return r.returncode == 0
+            if self.system == "Windows":
+                r = subprocess.run(
+                    ["tasklist", "/FI", "IMAGENAME eq Claude.exe", "/NH"],
+                    capture_output=True, text=True, timeout=3,
+                )
+                return "Claude.exe" in (r.stdout or "")
+        except Exception:
+            pass
+        return False
+
     def quit_claude(self) -> None:
         """安装前退出 Claude，避免它退出时用内存中的旧 locale 覆盖配置文件"""
         if self.dry_run:
             print("\n[预演] 跳过退出 Claude")
             return
+        if not self._is_claude_running():
+            print("\nClaude 未在运行，跳过退出。")
+            return
         print("\n正在退出 Claude（避免覆盖语言设置）...")
         try:
             if self.system == "Darwin":
-                # 优雅退出
                 subprocess.run(
                     ["osascript", "-e", 'tell application "Claude" to quit'],
                     capture_output=True, timeout=10,
                 )
-                time.sleep(2)
-                # 兜底：若仍在运行则强制结束
-                subprocess.run(["pkill", "-x", "Claude"], capture_output=True)
             elif self.system == "Windows":
+                # 不带 /F 是优雅退出
                 subprocess.run(
-                    ["taskkill", "/IM", "Claude.exe", "/F"],
+                    ["taskkill", "/IM", "Claude.exe"],
                     capture_output=True, timeout=10,
                 )
+
+            # 轮询等待最多 8 秒
+            for _ in range(16):
+                if not self._is_claude_running():
+                    print("  ✓ Claude 已退出")
+                    return
+                time.sleep(0.5)
+
+            # 超时强杀
+            print("  ⚠ 优雅退出超时，强制结束 Claude 进程")
+            if self.system == "Darwin":
+                subprocess.run(["pkill", "-9", "Claude"], capture_output=True)
+            elif self.system == "Windows":
+                subprocess.run(["taskkill", "/IM", "Claude.exe", "/F"], capture_output=True)
             time.sleep(1)
-            print("  ✓ 已尝试退出 Claude")
         except Exception as e:
             print(f"  ⚠ 退出 Claude 时出现问题（可忽略，请确保手动退出）: {e}")
 
@@ -163,11 +192,20 @@ class ClaudePatcher:
             if self.system == "Darwin":
                 subprocess.run(["open", "-a", "Claude"], capture_output=True, timeout=10)
             elif self.system == "Windows":
-                # Claude.exe 通常在 base 目录下
-                exe = self.paths.get("app")
-                exe_path = (exe / "Claude.exe") if exe else None
-                if exe_path and exe_path.exists():
+                base = self.paths.get("app")
+                exe_path = None
+                if base and base.exists():
+                    # 优先根目录
+                    if (base / "Claude.exe").exists():
+                        exe_path = base / "Claude.exe"
+                    else:
+                        # 递归找，取最近修改的
+                        candidates = list(base.rglob("Claude.exe"))
+                        if candidates:
+                            exe_path = max(candidates, key=lambda p: p.stat().st_mtime)
+                if exe_path:
                     subprocess.Popen([str(exe_path)])
+                    print("  ✓ 已启动 Claude")
                 else:
                     print("  ⚠ 未找到 Claude.exe，请手动启动 Claude")
                     return
@@ -266,17 +304,15 @@ class ClaudePatcher:
             if not pattern.search(content):
                 continue
 
-            # 已包含目标语言
-            if f'"{lang}"]' in content and pattern.search(content):
-                if re.search(re.escape(f',"{lang}"]'), content):
-                    print(f"  ✓ 语言白名单已包含 {lang}: {js_file.name}")
-                    return True
-
             new_content = pattern.sub(replacement, content, count=1)
-            if new_content != content:
-                self._write(js_file, new_content)
-                print(f"  ✓ 已修改语言白名单: {js_file.name}")
+            if new_content == content:
+                # 白名单已经是目标状态（已包含 lang）
+                print(f"  ✓ 语言白名单已包含 {lang}: {js_file.name}")
                 return True
+
+            self._write(js_file, new_content)
+            print(f"  ✓ 已修改语言白名单: {js_file.name}")
+            return True
 
         print(f"  ✗ 未找到语言白名单位置（Claude 的 bundle 格式可能已变化）")
         return False
@@ -296,7 +332,14 @@ class ClaudePatcher:
                 try:
                     config = json.loads(config_path.read_text(encoding="utf-8"))
                 except json.JSONDecodeError:
-                    print(f"  ⚠ 现有配置不是有效 JSON，将重新创建")
+                    backup = config_path.with_suffix(".json.bak-invalid")
+                    if not self.dry_run:
+                        try:
+                            shutil.copy2(config_path, backup)
+                            self._chown_to_sudo_user(backup)
+                        except Exception as be:
+                            print(f"  ⚠ 备份损坏配置失败: {be}")
+                    print(f"  ⚠ 现有配置不是有效 JSON，已备份到 {backup.name}，将重新创建")
             config["locale"] = lang
             content = json.dumps(config, ensure_ascii=False, indent=2) + "\n"
 
@@ -376,6 +419,9 @@ class ClaudePatcher:
     # ---------- 恢复 ----------
 
     def restore(self, lang: str) -> bool:
+        # 先退出 Claude，避免它退出时用内存中的旧 locale 覆盖配置文件
+        self.quit_claude()
+
         print(f"\n正在恢复（移除 {lang} 中文文件并重置配置）...")
         removed = 0
 
@@ -420,6 +466,10 @@ class ClaudePatcher:
         print(f"\n注意: 语言白名单的修改不会被还原（不影响功能），"
               f"如需彻底还原请重新安装 Claude Desktop。")
         print(f"已删除 {removed} 个文件。")
+
+        # 重新启动 Claude，使其加载恢复后的配置
+        self.launch_claude()
+
         return True
 
     # ---------- 文件操作辅助 ----------
@@ -569,8 +619,8 @@ def main() -> int:
 
     success = patcher.install(lang, with_system_prompt=with_sp)
 
-    if success:
-        patcher.launch_claude()
+    # 无论成功失败都重启 Claude（install 过程中已关闭它）
+    patcher.launch_claude()
 
     print("\n" + "=" * 60)
     if success:

@@ -11,6 +11,15 @@
   - 安装时交互询问，或用 `--system-prompt` / `--no-system-prompt` 直接指定
   - 带注释标记的幂等写入，`--restore` 时干净移除，不影响用户已有内容
 
+### 改进
+- `quit_claude` 改用轮询等待，最多 8 秒，超时才强杀，降低数据损坏风险
+- `quit_claude` 新增进程检测，未运行时跳过退出
+- `launch_claude` Windows 下递归查找 `Claude.exe`，支持版本子目录结构
+- `restore` 流程对称地加入退出/重启，确保卸载后配置正确恢复
+- 安装失败时也会重启 Claude，避免用户发现 Claude "消失了"
+- `patch_language_whitelist` 简化判断逻辑，消除冗余和潜在误判
+- `set_user_locale` 在配置损坏时先备份为 `.bak-invalid` 再覆盖，降低数据丢失风险
+
 ### 计划中
 - 可选的硬编码文本替换模块（提升覆盖率到 ~80%）
 - 自动备份功能
