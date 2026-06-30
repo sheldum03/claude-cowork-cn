@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Desktop 中文补丁 · 轻量版 | claude-cowork-cn</title>
+    <meta name="description" content="claude-cowork-cn 是一个轻量级开源工具，用一个 Python 脚本为 Claude Desktop 桌面客户端添加简体中文/繁体中文界面。无需修改 app.asar，支持 macOS 和 Windows。">
+    <meta name="keywords" content="Claude Desktop, 中文, 中文补丁, Chinese, localization, i18n, zh-CN, macOS, Windows">
+    <link rel="canonical" href="https://sheldum03.github.io/claude-cowork-cn/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Claude Desktop 中文补丁 · 轻量版">
+    <meta property="og:description" content="一个 Python 脚本为 Claude Desktop 添加中文界面，无需修改 app.asar，几秒钟完成安装。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sheldum03.github.io/claude-cowork-cn/">
+
+    <!-- JSON-LD 结构化数据 -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "claude-cowork-cn",
+        "alternateName": "Claude Desktop 中文补丁 · 轻量版",
+        "description": "轻量级开源工具，用一个 Python 脚本为 Claude Desktop 桌面客户端添加简体中文/繁体中文界面。无需修改 app.asar、无需重签名、无第三方依赖。",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "macOS, Windows",
+        "programmingLanguage": "Python",
+        "license": "https://opensource.org/licenses/MIT",
+        "url": "https://github.com/sheldum03/claude-cowork-cn",
+        "downloadUrl": "https://github.com/sheldum03/claude-cowork-cn/archive/refs/heads/main.zip",
+        "softwareVersion": "1.0.1",
+        "author": {
+            "@type": "Person",
+            "name": "xupei",
+            "url": "https://github.com/sheldum03"
+        },
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": "如何给 Claude Desktop 安装中文界面",
+        "description": "使用 claude-cowork-cn 工具为 Claude Desktop 添加简体中文界面的步骤",
+        "step": [
+            {
+                "@type": "HowToStep",
+                "position": 1,
+                "name": "克隆仓库",
+                "text": "运行 git clone https://github.com/sheldum03/claude-cowork-cn.git 并进入目录"
+            },
+            {
+                "@type": "HowToStep",
+                "position": 2,
+                "name": "运行安装脚本",
+                "text": "macOS 运行 sudo python3 install.py，Windows 以管理员身份运行 python install.py"
+            },
+            {
+                "@type": "HowToStep",
+                "position": 3,
+                "name": "完成",
+                "text": "Claude Desktop 会自动重启并显示中文界面"
+            }
+        ],
+        "totalTime": "PT30S"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "Claude Desktop 怎么设置中文？",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "使用 claude-cowork-cn 工具。运行 git clone https://github.com/sheldum03/claude-cowork-cn.git，然后 cd claude-cowork-cn && sudo python3 install.py（macOS）或以管理员身份运行 python install.py（Windows）。几秒钟即可完成，支持简体中文、繁体中文。"
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Claude Desktop 有没有中文版？",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "官方暂未内置中文界面，但可以用开源工具 claude-cowork-cn 一键添加。这是一个轻量级 Python 脚本，不修改核心文件，风险极低，支持 macOS 和 Windows。"
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Claude Desktop 中文补丁安全吗？",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "安全。claude-cowork-cn 不修改 app.asar、不重签名、不碰可执行文件，只是复制翻译资源文件和写入一行用户配置。随时可用 --restore 参数一键还原。"
+                }
+            }
+        ]
+    }
+    </script>
+
+    <style>
+        :root { color-scheme: light; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #1a1a2e;
+            background: #fafafa;
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.4rem; margin: 2rem 0 0.8rem; border-bottom: 1px solid #e0e0e0; padding-bottom: 0.4rem; }
+        p { margin-bottom: 1rem; }
+        .hero { text-align: center; padding: 3rem 0 2rem; }
+        .hero p { font-size: 1.1rem; color: #555; }
+        .badge { display: inline-block; margin: 0.2rem; }
+        .btn {
+            display: inline-block; margin-top: 1.5rem; padding: 0.8rem 2rem;
+            background: #2563eb; color: #fff; text-decoration: none;
+            border-radius: 6px; font-size: 1rem; font-weight: 500;
+        }
+        .btn:hover { background: #1d4ed8; }
+        code { background: #f0f0f0; padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.9em; }
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; }
+        pre code { background: none; padding: 0; color: inherit; }
+        .features { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0; }
+        .feature { background: #fff; border: 1px solid #e8e8e8; border-radius: 8px; padding: 1.2rem; }
+        .feature h3 { font-size: 1rem; margin-bottom: 0.4rem; }
+        .feature p { font-size: 0.9rem; color: #666; margin: 0; }
+        .faq dt { font-weight: 600; margin-top: 1.2rem; }
+        .faq dd { margin-left: 0; color: #444; }
+        footer { text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #e0e0e0; color: #888; font-size: 0.85rem; }
+        @media (max-width: 600px) { .features { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="hero">
+        <h1>Claude Desktop 中文补丁 · 轻量版</h1>
+        <p>一个 Python 脚本为 Claude Desktop 添加简体/繁体中文界面，无需修改 app.asar，几秒钟完成安装。</p>
+        <span class="badge"><img src="https://img.shields.io/badge/Python-3.7+-blue.svg" alt="Python 3.7+"></span>
+        <span class="badge"><img src="https://img.shields.io/badge/Platform-macOS%20%7C%20Windows-lightgrey.svg" alt="macOS | Windows"></span>
+        <span class="badge"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License"></span>
+        <br>
+        <a href="https://github.com/sheldum03/claude-cowork-cn" class="btn">GitHub 仓库</a>
+    </div>
+
+    <h2>快速安装</h2>
+    <p><strong>macOS：</strong></p>
+    <pre><code>git clone https://github.com/sheldum03/claude-cowork-cn.git
+cd claude-cowork-cn
+sudo python3 install.py</code></pre>
+    <p><strong>Windows：</strong></p>
+    <pre><code>git clone https://github.com/sheldum03/claude-cowork-cn.git
+cd claude-cowork-cn
+python install.py</code></pre>
+    <p>安装后 Claude Desktop 会自动重启并显示中文界面。</p>
+
+    <h2>特性</h2>
+    <div class="features">
+        <div class="feature">
+            <h3>轻量安全</h3>
+            <p>不修改 app.asar、不重签名、不碰可执行文件，只复制翻译资源。</p>
+        </div>
+        <div class="feature">
+            <h3>零依赖</h3>
+            <p>纯 Python 标准库，单文件脚本，无需 pip install 任何东西。</p>
+        </div>
+        <div class="feature">
+            <h3>一键还原</h3>
+            <p>运行 <code>--restore</code> 即可完全恢复英文，或直接重装 Claude。</p>
+        </div>
+        <div class="feature">
+            <h3>三种中文</h3>
+            <p>支持简体中文、繁体中文（台湾）、繁体中文（香港）。</p>
+        </div>
+    </div>
+
+    <h2>常见问题</h2>
+    <dl class="faq">
+        <dt>Claude Desktop 怎么设置中文？</dt>
+        <dd>官方暂未内置中文。使用本工具运行一条命令即可添加中文界面，支持 macOS 和 Windows。</dd>
+
+        <dt>Claude Desktop 有没有中文版？</dt>
+        <dd>官方没有，但 claude-cowork-cn 可以为其添加约 70% 的中文界面覆盖。</dd>
+
+        <dt>安全吗？会不会破坏 Claude？</dt>
+        <dd>不会。本工具只做文件复制和配置写入，不碰核心代码。随时可用 <code>--restore</code> 还原。</dd>
+
+        <dt>Claude 更新后中文消失了？</dt>
+        <dd>更新会覆盖翻译文件，重新运行一次安装脚本即可恢复。</dd>
+
+        <dt>和完整版有什么区别？</dt>
+        <dd>完整版（javaht/claude-desktop-zh-cn）修改 app.asar 实现接近 100% 覆盖率。本轻量版不碰 app.asar，覆盖率约 70%，安装更简单、风险更低。</dd>
+    </dl>
+
+    <h2>工作原理</h2>
+    <p><code>install.py</code> 是一个无第三方依赖的单文件 Python 脚本，做四件事：</p>
+    <p>1. 定位 Claude Desktop 安装目录（自动识别 macOS/Windows）<br>
+       2. 把中文翻译 JSON 与 Claude 自带的 en-US.json 按 key 合并，未翻译的回退英文<br>
+       3. 用正则在前端 JS bundle 的语言数组里追加中文代码<br>
+       4. 把用户配置文件的 locale 设为所选语言</p>
+
+    <footer>
+        <p>claude-cowork-cn &copy; 2026 xupei · <a href="https://github.com/sheldum03/claude-cowork-cn">GitHub</a> · MIT License</p>
+        <p>翻译资源来自 <a href="https://github.com/javaht/claude-desktop-zh-cn">javaht/claude-desktop-zh-cn</a></p>
+    </footer>
+</div>
+</body>
+</html>

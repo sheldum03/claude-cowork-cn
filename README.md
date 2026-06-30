@@ -6,7 +6,7 @@
 
 > 🚀 最简洁的 Claude Desktop 中文化方案 —— 一个 Python 脚本，几秒钟安装，不碰 app.asar。
 
-简体中文 | [更新日志](CHANGELOG.md) | [贡献指南](CONTRIBUTING.md)
+简体中文 | [English](README.en.md) | [更新日志](CHANGELOG.md) | [贡献指南](CONTRIBUTING.md)
 
 ![Claude Desktop 中文界面截图](docs/images/screenshot-home.png)
 
@@ -14,7 +14,9 @@
 
 ## 这是什么
 
-给 Claude Desktop 添加中文界面的补丁。它只做三件最核心的事：
+**claude-cowork-cn** 是一个轻量级开源工具，用一个 Python 脚本为 Claude Desktop 桌面客户端添加简体中文 / 繁体中文界面。无需修改 app.asar、无需重签名、无第三方依赖，几秒钟完成安装，支持 macOS 和 Windows。
+
+它只做三件最核心的事：
 
 1. 把中文翻译文件复制到 Claude 的资源目录
 2. 把中文加进前端的语言白名单（让"语言"菜单里出现中文选项）
@@ -95,8 +97,14 @@ python3 install.py --dry-run           # 预演，不实际修改任何文件
 
 ## 常见问题
 
+**Q: Claude Desktop 怎么设置中文？/ Claude Desktop 有没有中文版？**
+官方暂未内置中文，但可以用本工具一键添加中文界面。运行 `sudo python3 install.py`（macOS）或以管理员身份运行 `python install.py`（Windows），几秒钟即可完成。
+
+**Q: Claude Desktop 中文补丁安全吗？**
+安全。本工具不修改 app.asar、不重签名、不碰可执行文件，只是复制翻译资源文件和写入一行配置。随时可用 `--restore` 一键还原，或重装 Claude 即可恢复原状。
+
 **Q: 安装后还是英文？**
-完全退出并重启 Claude，然后在左下角头像 → Language 里手动切换一次。
+完全退出并重启 Claude，然后在左下角头像 → Language 里手动切换一次。（v1.0.1 版本已支持安装后自动重启并切换语言。）
 
 **Q: Claude 更新后中文没了？**
 更新会覆盖翻译文件，重新运行一次安装脚本即可。
@@ -109,6 +117,9 @@ python3 install.py --dry-run           # 预演，不实际修改任何文件
 
 **Q: 怎么卸载？**
 运行 `python3 install.py --restore`。
+
+**Q: 和完整版（javaht/claude-desktop-zh-cn）有什么区别？**
+完整版通过修改 app.asar 实现接近 100% 覆盖率，流程较复杂。本轻量版不碰 app.asar，覆盖率约 70%，但安装更简单、风险更低。两者是不同取舍，按需选择即可。
 
 ## 工作原理
 
